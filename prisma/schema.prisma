@@ -1,0 +1,139 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Category {
+  COMIDA
+  LIMPEZA
+  HIGIENE
+  DIA_A_DIA
+  BEBIDAS
+  OUTROS
+
+  @@map("category")
+}
+
+enum ItemStatus {
+  PENDING
+  PURCHASED
+
+  @@map("item_status")
+}
+
+enum ShoppingStatus {
+  OPEN
+  IN_PROGRESS
+  FINISHED
+
+  @@map("shopping_status")
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  createdById String?  @map("created_by_id")
+  plannedDate DateTime? @map("planned_date")
+  archivedAt  DateTime? @map("archived_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdBy    User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  items        Item[]
+  participants Participant[]
+  purchases    Purchase[]
+  shoppings    ShoppingSession[]
+
+  @@map("rooms")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  rooms Room[]
+
+  @@map("users")
+}
+
+model Participant {
+  id       String   @id @default(cuid())
+  roomId   String   @map("room_id")
+  name     String
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  room      Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  shoppings ShoppingSession[]
+  purchases Purchase[]
+
+  @@map("participants")
+}
+
+model Item {
+  id        String     @id @default(cuid())
+  roomId    String     @map("room_id")
+  name      String
+  quantity  String
+  category  Category   @default(OUTROS)
+  status    ItemStatus @default(PENDING)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("items")
+}
+
+model ShoppingSession {
+  id            String         @id @default(cuid())
+  roomId        String         @map("room_id")
+  participantId String?        @map("participant_id")
+  status        ShoppingStatus @default(IN_PROGRESS)
+  startedAt     DateTime       @default(now()) @map("started_at")
+  finishedAt    DateTime?      @map("finished_at")
+
+  room        Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  participant Participant? @relation(fields: [participantId], references: [id])
+  purchase    Purchase?
+
+  @@map("shopping_sessions")
+}
+
+model Purchase {
+  id            String   @id @default(cuid())
+  roomId        String   @map("room_id")
+  sessionId     String   @unique @map("session_id")
+  participantId String?  @map("participant_id")
+  totalAmount   Decimal  @map("total_amount") @db.Decimal(10, 2)
+  purchasedAt   DateTime @default(now()) @map("purchased_at")
+
+  room        Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  session     ShoppingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  participant Participant?    @relation(fields: [participantId], references: [id])
+  items       PurchaseItem[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id           String   @id @default(cuid())
+  purchaseId   String   @map("purchase_id")
+  name         String
+  quantity     String
+  category     Category
+  wasPurchased Boolean  @map("was_purchased")
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  @@map("purchase_items")
+}

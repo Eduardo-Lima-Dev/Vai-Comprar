@@ -1,0 +1,395 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-05T19:33:00.000Z",
+  "__export_source": "insomnia.desktop.app:v10.0.0",
+  "resources": [
+    {
+      "_id": "wrk_vai_comprar",
+      "_type": "workspace",
+      "name": "VaiComprar API",
+      "description": "Collection completa para fluxo de autenticacao e operacoes da casa/sala",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_vai_comprar_base",
+      "_type": "environment",
+      "parentId": "wrk_vai_comprar",
+      "name": "Base Environment",
+      "data": {}
+    },
+    {
+      "_id": "env_vai_comprar_dev",
+      "_type": "environment",
+      "parentId": "env_vai_comprar_base",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "token": "",
+        "room_slug": "",
+        "item_id": "",
+        "participant_id": "",
+        "session_id": "",
+        "purchase_id": ""
+      }
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_vai_comprar",
+      "name": "01 - Auth (Cadastro/Login)",
+      "description": "Fluxo inicial para obter JWT"
+    },
+    {
+      "_id": "req_auth_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/register",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/register",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Eduardo Silva\",\n  \"email\": \"eduardo@example.com\",\n  \"password\": \"123456\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_auth_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"eduardo@example.com\",\n  \"password\": \"123456\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_auth_me",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "GET /auth/me",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/me",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "fld_rooms",
+      "_type": "request_group",
+      "parentId": "wrk_vai_comprar",
+      "name": "02 - Rooms (Casa/Sala)",
+      "description": "Todas essas rotas exigem JWT"
+    },
+    {
+      "_id": "req_rooms_create",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "POST /rooms",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Casa Centro\",\n  \"plannedDate\": \"2026-05-12T12:00:00.000Z\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_rooms_get",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "GET /rooms/:slug",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "req_rooms_update",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "PATCH /rooms/:slug",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Casa Centro Atualizada\",\n  \"plannedDate\": \"2026-05-13T12:00:00.000Z\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_rooms_archive",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "POST /rooms/:slug/archive",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/archive",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "fld_items",
+      "_type": "request_group",
+      "parentId": "wrk_vai_comprar",
+      "name": "03 - Items",
+      "description": "CRUD de itens da lista"
+    },
+    {
+      "_id": "req_items_list",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "GET /rooms/:slug/items",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/items",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "req_items_create",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "POST /rooms/:slug/items",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/items",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Arroz\",\n  \"quantity\": \"5 kg\",\n  \"category\": \"COMIDA\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_items_update",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "PATCH /rooms/:slug/items/:itemId",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/items/{{ _.item_id }}",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Arroz Integral\",\n  \"quantity\": \"5 kg\",\n  \"category\": \"COMIDA\",\n  \"status\": \"PENDING\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_items_mark_purchased",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "PATCH /rooms/:slug/items/:itemId (status=PURCHASED)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/items/{{ _.item_id }}",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"PURCHASED\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_items_delete",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "DELETE /rooms/:slug/items/:itemId",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/items/{{ _.item_id }}",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "fld_participants",
+      "_type": "request_group",
+      "parentId": "wrk_vai_comprar",
+      "name": "04 - Participants",
+      "description": "Entrar/remover participante da sala"
+    },
+    {
+      "_id": "req_participants_add",
+      "_type": "request",
+      "parentId": "fld_participants",
+      "name": "POST /rooms/:slug/participants",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/participants",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Maria\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_participants_delete",
+      "_type": "request",
+      "parentId": "fld_participants",
+      "name": "DELETE /rooms/:slug/participants/:participantId",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/participants/{{ _.participant_id }}",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "fld_shopping",
+      "_type": "request_group",
+      "parentId": "wrk_vai_comprar",
+      "name": "05 - Shopping & History",
+      "description": "Iniciar compra, finalizar e consultar historico"
+    },
+    {
+      "_id": "req_shopping_start",
+      "_type": "request",
+      "parentId": "fld_shopping",
+      "name": "POST /rooms/:slug/shopping/start",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/shopping/start",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"participantId\": \"{{ _.participant_id }}\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_shopping_finish",
+      "_type": "request",
+      "parentId": "fld_shopping",
+      "name": "POST /rooms/:slug/shopping/:sessionId/finish",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/shopping/{{ _.session_id }}/finish",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"totalAmount\": 189.90,\n  \"participantId\": \"{{ _.participant_id }}\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_purchases_list",
+      "_type": "request",
+      "parentId": "fld_shopping",
+      "name": "GET /rooms/:slug/purchases",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/purchases",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "req_purchases_detail",
+      "_type": "request",
+      "parentId": "fld_shopping",
+      "name": "GET /rooms/:slug/purchases/:purchaseId",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_slug }}/purchases/{{ _.purchase_id }}",
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      }
+    },
+    {
+      "_id": "fld_health",
+      "_type": "request_group",
+      "parentId": "wrk_vai_comprar",
+      "name": "06 - Health",
+      "description": "Rota publica de healthcheck"
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "fld_health",
+      "name": "GET /health",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health"
+    }
+  ]
+}
