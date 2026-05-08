@@ -47,6 +47,22 @@ export class RoomsService {
     return room;
   }
 
+  async findAllForUser(userId: string) {
+    return this.prisma.room.findMany({
+      where: {
+        OR: [
+          { createdById: userId },
+          { participants: { some: { userId } } },
+        ],
+      },
+      orderBy: [
+        { archivedAt: { sort: 'asc', nulls: 'first' } },
+        { lastAccessedAt: { sort: 'desc', nulls: 'last' } },
+        { createdAt: 'desc' },
+      ],
+    });
+  }
+
   async findOne(room: Room) {
     return this.prisma.room.findUnique({
       where: { id: room.id },
@@ -77,6 +93,14 @@ export class RoomsService {
       data: { archivedAt: new Date() },
     });
     this.gateway.emitToRoom(room.slug, 'room:archived', { room: updated });
+    return updated;
+  }
+
+  async touch(room: Room) {
+    const updated = await this.prisma.room.update({
+      where: { id: room.id },
+      data: { lastAccessedAt: new Date() },
+    });
     return updated;
   }
 }

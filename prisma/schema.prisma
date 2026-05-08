@@ -39,9 +39,10 @@ model Room {
   slug        String   @unique
   name        String
   createdById String?  @map("created_by_id")
-  plannedDate DateTime? @map("planned_date")
-  archivedAt  DateTime? @map("archived_at")
-  createdAt   DateTime @default(now()) @map("created_at")
+  plannedDate    DateTime? @map("planned_date")
+  archivedAt     DateTime? @map("archived_at")
+  lastAccessedAt DateTime? @map("last_accessed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   createdBy    User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
@@ -61,7 +62,8 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  rooms Room[]
+  rooms        Room[]
+  participants Participant[]
 
   @@map("users")
 }
@@ -69,10 +71,12 @@ model User {
 model Participant {
   id       String   @id @default(cuid())
   roomId   String   @map("room_id")
+  userId   String?  @map("user_id")
   name     String
   joinedAt DateTime @default(now()) @map("joined_at")
 
   room      Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   shoppings ShoppingSession[]
   purchases Purchase[]
 

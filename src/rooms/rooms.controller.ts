@@ -19,6 +19,11 @@ export class RoomsController {
     return this.roomsService.create(dto, user.sub);
   }
 
+  @Get()
+  findAllForUser(@CurrentUser() user: JwtPayload) {
+    return this.roomsService.findAllForUser(user.sub);
+  }
+
   @Get(':slug')
   @UseGuards(RoomGuard)
   findOne(@CurrentRoom() room: Room) {
@@ -35,5 +40,11 @@ export class RoomsController {
   @UseGuards(RoomGuard)
   archive(@CurrentRoom() room: Room) {
     return this.roomsService.archive(room);
+  }
+
+  @Post(':slug/touch')
+  @UseGuards(RoomGuard)
+  touch(@CurrentRoom() room: Room) {
+    return this.roomsService.touch(room);
   }
 }

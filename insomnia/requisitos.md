@@ -130,6 +130,46 @@ Opcionalmente, o sistema pode permitir remover participantes da sala.
 
 O sistema pode permitir que a sala seja encerrada ou arquivada.
 
+## RF21 — Cadastro de usuário
+
+O sistema deve permitir o cadastro de usuário com nome, e-mail e senha.
+
+## RF22 — Login de usuário
+
+O sistema deve permitir login com e-mail e senha, retornando token de autenticação.
+
+## RF23 — Obter dados do usuário autenticado
+
+O sistema deve permitir consultar os dados do usuário autenticado.
+
+## RF24 — Exigir autenticação para operações da sala
+
+O sistema deve exigir autenticação para criar salas e para todas as operações de itens, participantes e compras.
+
+## RF25 — Impedir compras simultâneas na mesma sala
+
+O sistema deve impedir mais de uma compra em andamento ao mesmo tempo na mesma sala.
+
+## RF26 — Bloquear alterações em sala arquivada
+
+O sistema deve impedir alterações (itens, participantes, compras e edições da sala) quando a sala estiver arquivada.
+
+## RF27 — Vincular comprador à sala na abertura da compra
+
+Ao iniciar uma compra, o sistema deve registrar o participante responsável na sessão de compra.
+
+## RF28 — Resetar itens comprados ao finalizar compra
+
+Ao finalizar a compra, o sistema deve preparar a lista para o próximo ciclo, retornando itens comprados para status pendente.
+
+## RF29 — Histórico com detalhe da compra
+
+O sistema deve permitir visualizar uma compra específica do histórico, com itens, valores e responsável.
+
+## RF30 — Eventos de atualização em tempo real
+
+O sistema deve publicar eventos em tempo real para alterações de sala, itens, participantes e compra.
+
 ---
 
 # 5. Requisitos Não Funcionais
@@ -160,7 +200,7 @@ Cada sala deve possuir um link único e difícil de adivinhar.
 
 ## RNF07 — Controle de acesso
 
-Somente pessoas com o link da sala devem conseguir acessar a lista.
+Somente pessoas autenticadas e com o link/slug da sala devem conseguir acessar e operar a lista.
 
 ## RNF08 — Integridade dos dados
 
@@ -194,6 +234,22 @@ O sistema deve solicitar confirmação antes de excluir itens importantes ou fin
 
 Os itens devem ser organizados por status, categoria ou ordem de criação.
 
+## RNF16 — Autenticação e autorização
+
+As rotas protegidas devem exigir token JWT válido.
+
+## RNF17 — Validação de dados
+
+Entradas de API devem ser validadas (campos obrigatórios, tamanho e formatos aceitos).
+
+## RNF18 — Consistência transacional
+
+A finalização de compra deve ocorrer de forma transacional para evitar histórico parcial ou inconsistências.
+
+## RNF19 — Tratamento padronizado de erros
+
+O sistema deve retornar erros de forma padronizada para facilitar integração com clientes.
+
 ---
 
 # 6. Regras de Negócio
@@ -221,6 +277,26 @@ Uma compra só pode ser finalizada após informar o valor total gasto.
 ## RN06 — Histórico
 
 Após finalizar uma compra, os dados devem ser armazenados no histórico da sala.
+
+## RN07 — Uma compra ativa por sala
+
+Cada sala pode ter, no máximo, uma compra em andamento por vez.
+
+## RN08 — Sala arquivada é somente leitura
+
+Quando arquivada, a sala não pode receber alterações.
+
+## RN09 — Finalização obrigatória com total positivo
+
+A compra só pode ser finalizada com valor total maior que zero.
+
+## RN10 — Relação entre compra e participante
+
+A compra em andamento deve estar associada a um participante da própria sala.
+
+## RN11 — Histórico com snapshot da compra
+
+Ao finalizar a compra, o sistema deve armazenar snapshot dos itens para preservar o contexto histórico.
 
 ---
 

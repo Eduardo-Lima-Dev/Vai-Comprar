@@ -25,4 +25,10 @@ export class AuthController {
   me(@CurrentUser() user: JwtPayload | undefined) {
     return user ?? null;
   }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  profile(@CurrentUser() user: JwtPayload) {
+    return this.authService.getProfile(user.sub);
+  }
 }

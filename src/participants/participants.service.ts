@@ -12,11 +12,12 @@ export class ParticipantsService {
     private readonly gateway: RoomsGateway,
   ) {}
 
-  async join(room: Room, dto: JoinParticipantDto) {
+  async join(room: Room, dto: JoinParticipantDto, userId: string) {
     assertRoomWritable(room);
     const participant = await this.prisma.participant.create({
       data: {
         roomId: room.id,
+        userId,
         name: dto.name,
       },
     });
