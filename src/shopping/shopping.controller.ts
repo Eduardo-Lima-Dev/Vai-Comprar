@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import type { Room } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentRoom } from '../common/decorators/current-room.decorator';
@@ -29,6 +29,14 @@ export class ShoppingController {
     @Body() dto: FinishShoppingDto,
   ) {
     return this.shoppingService.finish(room, sessionId, dto);
+  }
+
+  @Delete('shopping/:sessionId')
+  cancel(
+    @CurrentRoom() room: Room,
+    @Param('sessionId') sessionId: string,
+  ) {
+    return this.shoppingService.cancel(room, sessionId);
   }
 
   @Get('purchases')

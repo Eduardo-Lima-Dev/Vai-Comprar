@@ -164,6 +164,37 @@ export class ShoppingService {
     return this.serializePurchase(purchase);
   }
 
+  async cancel(room: Room, sessionId: string) {
+    assertRoomWritable(room);
+
+    const session = await this.prisma.shoppingSession.findFirst({
+      where: { id: sessionId, roomId: room.id },
+    });
+    
+    if (!session) {
+      throw new NotFoundException('Sessão de compra não encontrada');
+    }
+    if (session.status !== ShoppingStatus.IN_PROGRESS) {
+      throw new ConflictException('Apenas sessões em andamento podem ser canceladas');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Reset all purchased items back to pending
+      await tx.item.updateMany({
+        where: { roomId: room.id, status: ItemStatus.PURCHASED },
+        data: { status: ItemStatus.PENDING },
+      });
+
+      // 2. Delete the session
+      await tx.shoppingSession.delete({
+        where: { id: session.id },
+      });
+    });
+
+    this.gateway.emitToRoom(room.slug, 'shopping:cancelled', { sessionId });
+    return { success: true };
+  }
+
   async listPurchases(room: Room) {
     const list = await this.prisma.purchase.findMany({
       where: { roomId: room.id },
