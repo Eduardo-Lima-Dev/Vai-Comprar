@@ -50,6 +50,7 @@ model Room {
   participants Participant[]
   purchases    Purchase[]
   shoppings    ShoppingSession[]
+  accesses     RoomAccess[]
 
   @@map("rooms")
 }
@@ -64,6 +65,7 @@ model User {
 
   rooms        Room[]
   participants Participant[]
+  accesses     RoomAccess[]
 
   @@map("users")
 }
@@ -140,4 +142,17 @@ model PurchaseItem {
   purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
 
   @@map("purchase_items")
+}
+
+model RoomAccess {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  roomId         String   @map("room_id")
+  lastAccessedAt DateTime @default(now()) @map("last_accessed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roomId])
+  @@map("room_accesses")
 }

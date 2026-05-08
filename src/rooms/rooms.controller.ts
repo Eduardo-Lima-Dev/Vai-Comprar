@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Delete, UseGuards } from '@nestjs/common';
 import type { Room } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -44,7 +44,19 @@ export class RoomsController {
 
   @Post(':slug/touch')
   @UseGuards(RoomGuard)
-  touch(@CurrentRoom() room: Room) {
-    return this.roomsService.touch(room);
+  touch(@CurrentRoom() room: Room, @CurrentUser() user: JwtPayload) {
+    return this.roomsService.touch(room, user.sub);
+  }
+
+  @Delete(':slug')
+  @UseGuards(RoomGuard)
+  remove(@CurrentRoom() room: Room, @CurrentUser() user: JwtPayload) {
+    return this.roomsService.remove(room, user.sub);
+  }
+
+  @Delete(':slug/leave')
+  @UseGuards(RoomGuard)
+  leave(@CurrentRoom() room: Room, @CurrentUser() user: JwtPayload) {
+    return this.roomsService.leave(room, user.sub);
   }
 }
