@@ -43,6 +43,20 @@ export class RoomsService {
       },
     });
 
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user) {
+      await this.prisma.participant.create({
+        data: {
+          roomId: room.id,
+          userId,
+          name: user.name,
+        },
+      });
+    }
+
     this.gateway.emitToRoom(slug, 'room:created', { room });
     return room;
   }
@@ -142,25 +156,23 @@ export class RoomsService {
       },
     });
 
-    if (room.createdById !== userId) {
-      const existingParticipant = await this.prisma.participant.findFirst({
-        where: { roomId: room.id, userId },
+    const existingParticipant = await this.prisma.participant.findFirst({
+      where: { roomId: room.id, userId },
+    });
+
+    if (!existingParticipant) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
       });
 
-      if (!existingParticipant) {
-        const user = await this.prisma.user.findUnique({
-          where: { id: userId },
+      if (user) {
+        await this.prisma.participant.create({
+          data: {
+            roomId: room.id,
+            userId,
+            name: user.name,
+          },
         });
-
-        if (user) {
-          await this.prisma.participant.create({
-            data: {
-              roomId: room.id,
-              userId,
-              name: user.name,
-            },
-          });
-        }
       }
     }
 

@@ -21,22 +21,6 @@ export class ParticipantsService {
       joinedAt: Date;
     }> = [];
 
-    if (room.createdById) {
-      const creator = await this.prisma.user.findUnique({
-        where: { id: room.createdById },
-        select: { id: true, name: true, createdAt: true },
-      });
-      if (creator) {
-        members.push({
-          id: creator.id,
-          userId: creator.id,
-          name: creator.name,
-          role: 'CREATOR',
-          joinedAt: room.createdAt,
-        });
-      }
-    }
-
     const participants = await this.prisma.participant.findMany({
       where: { roomId: room.id },
       orderBy: { joinedAt: 'asc' },
@@ -47,10 +31,19 @@ export class ParticipantsService {
         id: p.id,
         userId: p.userId,
         name: p.name,
-        role: 'PARTICIPANT',
+        role:
+          p.userId === room.createdById && room.createdById !== null
+            ? 'CREATOR'
+            : 'PARTICIPANT',
         joinedAt: p.joinedAt,
       });
     }
+
+    members.sort((a, b) => {
+      if (a.role === 'CREATOR') return -1;
+      if (b.role === 'CREATOR') return 1;
+      return 0;
+    });
 
     return members;
   }
