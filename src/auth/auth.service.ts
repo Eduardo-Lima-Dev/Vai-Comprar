@@ -8,6 +8,7 @@ import { compare, hash } from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';
+import type { UpdateProfileDto } from './dto/update-profile.dto';
 import type { JwtPayload } from './types/jwt-payload.type';
 
 @Injectable()
@@ -92,5 +93,50 @@ export class AuthService {
       throw new UnauthorizedException('Usuário não encontrado');
     }
     return user;
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    if (dto.email) {
+      const existing = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
+      if (existing && existing.id !== userId) {
+        throw new ConflictException('Email já está em uso por outra conta');
+      }
+    }
+
+    const dataToUpdate: any = {
+      ...(dto.name && { name: dto.name }),
+      ...(dto.email && { email: dto.email }),
+    };
+
+    if (dto.password) {
+      dataToUpdate.passwordHash = await hash(dto.password, 10);
+    }
+
+    const updatedUser = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.update({
+        where: { id: userId },
+        data: dataToUpdate,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (dto.name) {
+        await tx.participant.updateMany({
+          where: { userId },
+          data: { name: dto.name },
+        });
+      }
+
+      return user;
+    });
+
+    return updatedUser;
   }
 }
