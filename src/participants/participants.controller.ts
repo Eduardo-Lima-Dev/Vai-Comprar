@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   UseGuards,
@@ -27,6 +28,11 @@ export class ParticipantsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.participantsService.join(room, dto, user.sub);
+  }
+
+  @Get()
+  findAll(@CurrentRoom() room: Room) {
+    return this.participantsService.findAll(room);
   }
 
   @Delete(':participantId')

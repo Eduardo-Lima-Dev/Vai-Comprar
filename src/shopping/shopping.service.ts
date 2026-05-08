@@ -45,6 +45,29 @@ export class ShoppingService {
     }
   }
 
+  async getActive(room: Room) {
+    const active = await this.prisma.shoppingSession.findFirst({
+      where: {
+        roomId: room.id,
+        status: ShoppingStatus.IN_PROGRESS,
+      },
+      include: {
+        participant: { select: { name: true } },
+      },
+    });
+
+    if (!active) {
+      return null;
+    }
+
+    return {
+      id: active.id,
+      startedAt: active.startedAt,
+      participantId: active.participantId,
+      participantName: active.participant?.name ?? null,
+    };
+  }
+
   async start(room: Room, dto: StartShoppingDto) {
     assertRoomWritable(room);
     await this.ensureParticipantInRoom(room.id, dto.participantId);

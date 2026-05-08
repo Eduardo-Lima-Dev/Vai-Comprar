@@ -12,6 +12,11 @@ import { ShoppingService } from './shopping.service';
 export class ShoppingController {
   constructor(private readonly shoppingService: ShoppingService) {}
 
+  @Get('shopping/active')
+  getActive(@CurrentRoom() room: Room) {
+    return this.shoppingService.getActive(room);
+  }
+
   @Post('shopping/start')
   start(@CurrentRoom() room: Room, @Body() dto: StartShoppingDto) {
     return this.shoppingService.start(room, dto);

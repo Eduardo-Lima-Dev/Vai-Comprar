@@ -12,6 +12,49 @@ export class ParticipantsService {
     private readonly gateway: RoomsGateway,
   ) {}
 
+  async findAll(room: Room) {
+    const members: Array<{
+      id: string;
+      userId: string | null;
+      name: string;
+      role: 'CREATOR' | 'PARTICIPANT';
+      joinedAt: Date;
+    }> = [];
+
+    if (room.createdById) {
+      const creator = await this.prisma.user.findUnique({
+        where: { id: room.createdById },
+        select: { id: true, name: true, createdAt: true },
+      });
+      if (creator) {
+        members.push({
+          id: creator.id,
+          userId: creator.id,
+          name: creator.name,
+          role: 'CREATOR',
+          joinedAt: room.createdAt,
+        });
+      }
+    }
+
+    const participants = await this.prisma.participant.findMany({
+      where: { roomId: room.id },
+      orderBy: { joinedAt: 'asc' },
+    });
+
+    for (const p of participants) {
+      members.push({
+        id: p.id,
+        userId: p.userId,
+        name: p.name,
+        role: 'PARTICIPANT',
+        joinedAt: p.joinedAt,
+      });
+    }
+
+    return members;
+  }
+
   async join(room: Room, dto: JoinParticipantDto, userId: string) {
     assertRoomWritable(room);
     const participant = await this.prisma.participant.create({
